@@ -1,0 +1,33 @@
+{
+  "name": "Aplikasi Jadwal KBM - SMA Negeri 1 Baturetno",
+  "short_name": "Jadwal KBM",
+  "description": "Aplikasi Jadwal Kegiatan Belajar Mengajar SMA Negeri 1 Baturetno",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f0f4f8",
+  "theme_color": "#1a4078",
+  "orientation": "any",
+  "lang": "id",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ]
+}
