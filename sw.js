@@ -4,8 +4,8 @@
 //            Network First untuk data jadwal dari Apps Script
 // ============================================================
 
-const CACHE_NAME   = 'jadwal-smansaba-v1';
-const CACHE_STATIC = 'jadwal-static-v1';
+const CACHE_NAME   = 'jadwal-smansaba-v2';
+const CACHE_STATIC = 'jadwal-static-v2';
 
 // Aset yang di-cache saat install (shell aplikasi)
 const STATIC_ASSETS = [
