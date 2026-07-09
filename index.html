@@ -35,6 +35,8 @@
   .scrollbar-thin::-webkit-scrollbar-thumb{background:transparent;border-radius:99px}
   .scrollbar-thin:hover::-webkit-scrollbar-thumb{background:#cbd5e1}
   .scrollbar-thin::-webkit-scrollbar-track{background:transparent}
+  .nav-scroll{overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none}
+  .nav-scroll::-webkit-scrollbar{display:none}
   @keyframes spin{to{transform:rotate(360deg)}}
   .spinner{animation:spin .8s linear infinite}
   table.jadwal-tbl{border-collapse:separate;border-spacing:0}
@@ -121,7 +123,7 @@
 
   <!-- NAV TABS -->
   <nav class="bg-white border-b border-slate-200 sticky top-[65px] sm:top-[69px] z-20 shadow-sm">
-    <div class="max-w-7xl mx-auto flex overflow-x-auto scrollbar-thin">
+    <div class="max-w-7xl mx-auto flex overflow-x-auto nav-scroll">
       <button class="nav-btn shrink-0 px-5 sm:px-6 py-3.5 text-[15px] font-semibold text-brand-700 border-b-[3px] border-brand-600 -mb-px transition-colors" data-tab="hari-ini" onclick="showTab('hari-ini',this)">📅 Hari Ini</button>
       <button class="nav-btn shrink-0 px-5 sm:px-6 py-3.5 text-[15px] font-semibold text-slate-500 border-b-[3px] border-transparent hover:text-slate-700 hover:bg-slate-50 -mb-px transition-colors" data-tab="jadwal-kelas" onclick="showTab('jadwal-kelas',this)">🏫 Jadwal Kelas</button>
       <button class="nav-btn shrink-0 px-5 sm:px-6 py-3.5 text-[15px] font-semibold text-slate-500 border-b-[3px] border-transparent hover:text-slate-700 hover:bg-slate-50 -mb-px transition-colors" data-tab="jadwal-guru" onclick="showTab('jadwal-guru',this)">👤 Jadwal Guru</button>
@@ -296,7 +298,7 @@
 </div>
 
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwgmor2y8KWiMPfrppJh-lie_Myvgp9nhf5sHJE-1ex6LJkAtCS7yvsDVoMvbNHN0H5/exec';
+const SCRIPT_URL = 'GANTI_DENGAN_URL_APPS_SCRIPT';
 const HARI  = ['SENIN','SELASA','RABU','KAMIS','JUMAT'];
 const HARI_LENGKAP = {SENIN:'Senin',SELASA:'Selasa',RABU:'Rabu',KAMIS:'Kamis',JUMAT:'Jumat'};
 const JAM   = [1,2,3,4,5,6,7,8,9,10];
