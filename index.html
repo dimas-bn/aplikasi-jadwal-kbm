@@ -613,6 +613,19 @@ function initSelects() {
     .map(m=>`<option value="${m}">${m}</option>`).join('');
 }
 
+// Sort kelas secara numerik: "KELAS X - 2" < "KELAS X - 10"
+function kelasSort(a, b) {
+  // Pisahkan tingkat (X/XI/XII) dan nomor
+  const parse = k => {
+    const m = k.match(/KELAS\s+(X{1,3}I{0,3}|XI{0,2})\s*-\s*(\d+)/i);
+    if (!m) return { tingkat: k, nomor: 0 };
+    const tingkatRank = { 'X':0, 'XI':1, 'XII':2 };
+    return { tingkat: tingkatRank[m[1].toUpperCase()] ?? 99, nomor: parseInt(m[2]) || 0 };
+  };
+  const pa = parse(a), pb = parse(b);
+  return pa.tingkat !== pb.tingkat ? pa.tingkat - pb.tingkat : pa.nomor - pb.nomor;
+}
+
 function getMapelIdx(nama) {
   const list = [...new Set(Object.values(D.guru).map(g=>g.mapel))];
   const i = list.indexOf(nama); return i>=0?i:0;
@@ -880,7 +893,7 @@ function renderHariIni() {
   }
 
   // Urutkan: jam → kelas
-  entries.sort((a,b) => a.jam-b.jam || a.kelas.localeCompare(b.kelas));
+  entries.sort((a,b) => a.jam-b.jam || kelasSort(a.kelas, b.kelas));
 
   // Render tabel
   let lastJam = null;
@@ -1004,7 +1017,7 @@ function renderJadwalMapel() {
   // ── TABEL DETAIL ──────────────────────────────────────────────
   // Urutkan: hari → jam
   const hariIdx = h => HARI.indexOf(h);
-  entries.sort((a,b) => hariIdx(a.hari)-hariIdx(b.hari) || a.jam-b.jam || a.kelas.localeCompare(b.kelas));
+  entries.sort((a,b) => hariIdx(a.hari)-hariIdx(b.hari) || a.jam-b.jam || kelasSort(a.kelas, b.kelas));
 
   let html = `<table class="jadwal-tbl w-full text-sm min-w-[620px]">
     <thead><tr>
