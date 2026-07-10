@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="id"><head>
+<!DOCTYPE html><html lang="id" class="">
+<head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Aplikasi Jadwal KBM | SMA Negeri 1 Baturetno</title>
 <meta name="description" content="Jadwal pelajaran sekolah — dapat diakses publik">
@@ -13,6 +14,7 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
   tailwind.config = {
+    darkMode: 'class',
     theme: {
       extend: {
         colors: {
@@ -43,6 +45,63 @@
   table.jadwal-tbl th:first-child{border-top-left-radius:.5rem}
   table.jadwal-tbl th:last-child{border-top-right-radius:.5rem}
   .hari-divider td{border-top:3px solid #1f4e8f !important}
+
+  /* ── DARK MODE ── */
+  .dark body{background:#0f172a;color:#e2e8f0}
+  .dark .bg-white{background:#1e293b !important}
+  .dark .bg-slate-100{background:#0f172a !important}
+  .dark .bg-slate-50{background:#1e293b !important}
+  .dark .bg-slate-50\/60{background:rgba(30,41,59,.6) !important}
+  .dark .bg-slate-50\/70{background:rgba(30,41,59,.7) !important}
+  .dark .bg-slate-100\/70{background:rgba(15,23,42,.7) !important}
+  .dark .border-slate-200{border-color:#334155 !important}
+  .dark .border-slate-100{border-color:#1e293b !important}
+  .dark .text-slate-800{color:#e2e8f0 !important}
+  .dark .text-slate-700{color:#cbd5e1 !important}
+  .dark .text-slate-600{color:#94a3b8 !important}
+  .dark .text-slate-500{color:#64748b !important}
+  .dark .text-slate-400{color:#475569 !important}
+  .dark .text-slate-300{color:#334155 !important}
+  .dark .divide-slate-100>*+*{border-color:#1e293b !important}
+  .dark .divide-y>*+*{border-color:#334155 !important}
+  /* Nav */
+  .dark nav.bg-white{background:#1e293b !important}
+  .dark .nav-btn:hover:not(.active){background:#0f172a !important}
+  /* Cards & panels */
+  .dark .shadow-sm{box-shadow:0 1px 3px rgba(0,0,0,.4) !important}
+  .dark .bg-slate-100.bg-slate-100{background:#1e293b !important}
+  /* Table */
+  .dark .jadwal-tbl td{border-color:#334155}
+  .dark .jadwal-tbl tr:hover td{background:#1e293b}
+  .dark .jadwal-tbl .bg-slate-100{background:#0f172a !important}
+  /* Inputs & selects */
+  .dark select,.dark input[type=text],.dark input[type=date],.dark input[type=search]{
+    background:#0f172a !important;color:#e2e8f0 !important;border-color:#334155 !important}
+  /* Istirahat row */
+  .dark .bg-amber-50{background:#1c1208 !important}
+  .dark .text-amber-700{color:#fbbf24 !important}
+  /* Pengumuman */
+  .dark .pg-info    {background:#1e293b;border-left-color:#2b63b3}
+  .dark .pg-penting {background:#1c1a08;border-left-color:#d97706}
+  .dark .pg-libur   {background:#0a1f15;border-left-color:#15875c}
+  .dark .pg-kegiatan{background:#1a1028;border-left-color:#7c3aed}
+  /* Search overlay */
+  .dark .bg-white.rounded-2xl{background:#1e293b !important}
+  .dark .search-cat{background:#0f172a;color:#94a3b8}
+  .dark .search-cat:hover{background:#334155;color:#e2e8f0}
+  .dark .search-result-item:hover,.dark .search-result-item.focused{background:#0f172a}
+  .dark mark{background:#1e3a5f;color:#93c5fd}
+  /* Loading */
+  .dark .text-slate-400{color:#475569 !important}
+  /* Modal */
+  .dark .bg-white.rounded-2xl.p-5,.dark .bg-white.rounded-2xl.p-6{background:#1e293b !important}
+  /* Konflik banner */
+  .dark .bg-red-50{background:#2d0a0a !important}
+  .dark .border-red-200{border-color:#7f1d1d !important}
+  /* Brand light bg */
+  .dark .bg-brand-50{background:#0d1829 !important}
+  /* Transition */
+  body,nav,.bg-white,input,select,textarea{transition:background-color .2s ease,border-color .2s ease,color .2s ease}
   .search-cat{background:#f1f5f9;color:#64748b}
   .search-cat:hover{background:#e2e8f0;color:#334155}
   .active-cat{background:#1a4078 !important;color:#fff !important}
@@ -58,9 +117,78 @@
   .pg-penting {border-left:4px solid #d97706;background:#fffbeb}
   .pg-libur   {border-left:4px solid #15875c;background:#eefcf5}
   .pg-kegiatan{border-left:4px solid #7c3aed;background:#f5f3ff}
+
+  /* ── DARK MODE ── */
+  .dark body{background:#0f172a;color:#e2e8f0}
+
+  /* Cards & panels */
+  .dark .bg-white{background:#1e293b !important}
+  .dark .bg-slate-50,.dark .bg-slate-50\/60,.dark .bg-slate-50\/70{background:#0f172a !important}
+  .dark .bg-slate-100,.dark .bg-slate-100\/70{background:#1e293b !important}
+  .dark .border-slate-200{border-color:#334155 !important}
+  .dark .border-slate-100{border-color:#1e293b !important}
+  .dark .border-slate-300{border-color:#475569 !important}
+
+  /* Text */
+  .dark .text-slate-800{color:#f1f5f9 !important}
+  .dark .text-slate-700{color:#e2e8f0 !important}
+  .dark .text-slate-600{color:#cbd5e1 !important}
+  .dark .text-slate-500{color:#94a3b8 !important}
+  .dark .text-slate-400{color:#64748b !important}
+  .dark .text-slate-300{color:#475569 !important}
+
+  /* Inputs & selects */
+  .dark select,.dark input[type=text],.dark input[type=date],.dark input[type=search]{
+    background:#0f172a !important;color:#e2e8f0 !important;border-color:#475569 !important}
+
+  /* Tables */
+  .dark table.jadwal-tbl td{border-color:#1e293b !important}
+  .dark table.jadwal-tbl tr:hover td,.dark tr:hover td{background:#1e293b !important}
+  .dark table.jadwal-tbl .j-jam,.dark .bg-slate-100{background:#162032 !important}
+  .dark .bg-amber-50{background:#1c1505 !important}
+  .dark .text-amber-700{color:#fbbf24 !important}
+  .dark .border-dashed{border-color:#334155 !important}
+
+  /* Search overlay */
+  .dark .search-cat{background:#1e293b;color:#94a3b8}
+  .dark .search-cat:hover{background:#334155;color:#e2e8f0}
+  .dark .active-cat{background:#1a4078 !important;color:#fff !important}
+  .dark .search-result-item:hover,.dark .search-result-item.focused{background:#1e293b}
+  .dark .search-result-title{color:#f1f5f9}
+  .dark .search-result-sub{color:#94a3b8}
+  .dark mark{background:#1e3a5f;color:#93c5fd}
+  .dark .search-empty{color:#475569}
+  .dark .divide-slate-100>*{border-color:#1e293b !important}
+  .dark .bg-slate-50.border-t{background:#162032 !important;border-color:#334155 !important}
+
+  /* Modal */
+  .dark .divide-slate-100>div{border-color:#334155 !important}
+
+  /* Konflik & pills */
+  .dark .bg-red-50,.dark .bg-red-100{background:#2d1515 !important}
+  .dark .text-red-700{color:#fca5a5 !important}
+  .dark .border-red-200{border-color:#7f1d1d !important}
+  .dark .bg-brand-50\/60{background:#1a2744 !important}
+
+  /* Pengumuman */
+  .dark .pg-info    {background:#1e2d45;color:#bfdbfe}
+  .dark .pg-penting {background:#2d1f0a;color:#fde68a}
+  .dark .pg-libur   {background:#0d2b1e;color:#6ee7b7}
+  .dark .pg-kegiatan{background:#1e1244;color:#c4b5fd}
+
+  /* Scrollbar */
+  .dark .scrollbar-thin:hover::-webkit-scrollbar-thumb{background:#475569}
+  .dark .hari-divider td{border-top-color:#3b82f6 !important}
+
+  /* Piket cards */
+  .dark .bg-white.border{background:#1e293b !important;border-color:#334155 !important}
+  .dark .bg-slate-50.rounded-lg{background:#0f172a !important}
+
+  /* Wali kelas table */
+  .dark .divide-y>tr{border-color:#1e293b !important}
 </style>
 </head>
-<body class="bg-slate-100 text-slate-800 text-[15px] min-h-screen">
+<body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 text-[15px] min-h-screen transition-colors duration-200">
 
 <!-- HEADER -->
 <header class="bg-gradient-to-r from-brand-700 to-brand-600 text-white shadow-lg shadow-brand-900/10 sticky top-0 z-30">
@@ -70,6 +198,7 @@
       <h1 class="text-lg sm:text-xl font-bold tracking-tight truncate">Aplikasi Jadwal KBM</h1>
       <p id="headerSub" class="text-xs sm:text-sm text-brand-100/90">Memuat data...</p>
     </div>
+    <button onclick="toggleDark()" id="darkBtn" title="Ganti Tema" class="flex items-center justify-center w-9 h-9 bg-white/15 hover:bg-white/25 border border-white/30 text-white rounded-xl transition-all shrink-0 text-base">🌙</button>
     <button onclick="openSearch()" title="Pencarian Global" class="flex items-center gap-2 bg-white/15 hover:bg-white/25 border border-white/30 text-white px-3 py-2 rounded-xl text-sm font-semibold transition-all shrink-0">
       <span class="text-base">🔍</span>
       <span class="hidden sm:inline">Cari</span>
@@ -122,15 +251,15 @@
 <div id="app" class="hidden">
 
   <!-- NAV TABS -->
-  <nav class="bg-white border-b border-slate-200 sticky top-[65px] sm:top-[69px] z-20 shadow-sm">
+  <nav class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-[65px] sm:top-[69px] z-20 shadow-sm">
     <div class="max-w-7xl mx-auto flex overflow-x-auto nav-scroll">
-      <button class="nav-btn shrink-0 px-5 sm:px-6 py-3.5 text-[15px] font-semibold text-brand-700 border-b-[3px] border-brand-600 -mb-px transition-colors" data-tab="hari-ini" onclick="showTab('hari-ini',this)">📅 Hari Ini</button>
-      <button class="nav-btn shrink-0 px-5 sm:px-6 py-3.5 text-[15px] font-semibold text-slate-500 border-b-[3px] border-transparent hover:text-slate-700 hover:bg-slate-50 -mb-px transition-colors" data-tab="jadwal-kelas" onclick="showTab('jadwal-kelas',this)">🏫 Jadwal Kelas</button>
-      <button class="nav-btn shrink-0 px-5 sm:px-6 py-3.5 text-[15px] font-semibold text-slate-500 border-b-[3px] border-transparent hover:text-slate-700 hover:bg-slate-50 -mb-px transition-colors" data-tab="jadwal-guru" onclick="showTab('jadwal-guru',this)">👤 Jadwal Guru</button>
-      <button class="nav-btn shrink-0 px-5 sm:px-6 py-3.5 text-[15px] font-semibold text-slate-500 border-b-[3px] border-transparent hover:text-slate-700 hover:bg-slate-50 -mb-px transition-colors" data-tab="jadwal-mapel" onclick="showTab('jadwal-mapel',this)">📖 Jadwal Mapel</button>
-      <button class="nav-btn shrink-0 px-5 sm:px-6 py-3.5 text-[15px] font-semibold text-slate-500 border-b-[3px] border-transparent hover:text-slate-700 hover:bg-slate-50 -mb-px transition-colors" data-tab="wali-kelas" onclick="showTab('wali-kelas',this)">🧑‍🏫 Wali Kelas</button>
-      <button class="nav-btn shrink-0 px-5 sm:px-6 py-3.5 text-[15px] font-semibold text-slate-500 border-b-[3px] border-transparent hover:text-slate-700 hover:bg-slate-50 -mb-px transition-colors" data-tab="piket-guru" onclick="showTab('piket-guru',this)">🗓️ Piket Guru</button>
-      <button class="nav-btn shrink-0 px-5 sm:px-6 py-3.5 text-[15px] font-semibold text-slate-500 border-b-[3px] border-transparent hover:text-slate-700 hover:bg-slate-50 -mb-px transition-colors" data-tab="pengumuman" onclick="showTab('pengumuman',this)">📢 Pengumuman</button>
+      <button class="nav-btn shrink-0 px-5 sm:px-6 py-3.5 text-[15px] font-semibold text-brand-700 dark:text-brand-300 border-b-[3px] border-brand-600 -mb-px transition-colors" data-tab="hari-ini" onclick="showTab('hari-ini',this)">📅 Hari Ini</button>
+      <button class="nav-btn shrink-0 px-5 sm:px-6 py-3.5 text-[15px] font-semibold text-slate-500 dark:text-slate-400 border-b-[3px] border-transparent hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 -mb-px transition-colors" data-tab="jadwal-kelas" onclick="showTab('jadwal-kelas',this)">🏫 Jadwal Kelas</button>
+      <button class="nav-btn shrink-0 px-5 sm:px-6 py-3.5 text-[15px] font-semibold text-slate-500 dark:text-slate-400 border-b-[3px] border-transparent hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 -mb-px transition-colors" data-tab="jadwal-guru" onclick="showTab('jadwal-guru',this)">👤 Jadwal Guru</button>
+      <button class="nav-btn shrink-0 px-5 sm:px-6 py-3.5 text-[15px] font-semibold text-slate-500 dark:text-slate-400 border-b-[3px] border-transparent hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 -mb-px transition-colors" data-tab="jadwal-mapel" onclick="showTab('jadwal-mapel',this)">📖 Jadwal Mapel</button>
+      <button class="nav-btn shrink-0 px-5 sm:px-6 py-3.5 text-[15px] font-semibold text-slate-500 dark:text-slate-400 border-b-[3px] border-transparent hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 -mb-px transition-colors" data-tab="wali-kelas" onclick="showTab('wali-kelas',this)">🧑‍🏫 Wali Kelas</button>
+      <button class="nav-btn shrink-0 px-5 sm:px-6 py-3.5 text-[15px] font-semibold text-slate-500 dark:text-slate-400 border-b-[3px] border-transparent hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 -mb-px transition-colors" data-tab="piket-guru" onclick="showTab('piket-guru',this)">🗓️ Piket Guru</button>
+      <button class="nav-btn shrink-0 px-5 sm:px-6 py-3.5 text-[15px] font-semibold text-slate-500 dark:text-slate-400 border-b-[3px] border-transparent hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 -mb-px transition-colors" data-tab="pengumuman" onclick="showTab('pengumuman',this)">📢 Pengumuman</button>
     </div>
   </nav>
 
@@ -572,6 +701,39 @@ function renderPengumumanPublik() {
   }
   el.innerHTML = list.map(p => buildPgCard(p, false)).join('');
 }
+
+// ── DARK MODE ─────────────────────────────────────────────────
+
+function applyDark(isDark) {
+  const html = document.documentElement;
+  const btn  = document.getElementById('darkBtn');
+  if (isDark) {
+    html.classList.add('dark');
+    if (btn) btn.textContent = '☀️';
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content','#0f172a');
+  } else {
+    html.classList.remove('dark');
+    if (btn) btn.textContent = '🌙';
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content','#1a4078');
+  }
+}
+
+function toggleDark() {
+  const isDark = !document.documentElement.classList.contains('dark');
+  localStorage.setItem('theme', isDark ? 'dark' : 'light');
+  applyDark(isDark);
+}
+
+// Inisialisasi: cek localStorage, lalu system preference
+(function initDark() {
+  const saved  = localStorage.getItem('theme');
+  const prefer = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  applyDark(saved ? saved === 'dark' : prefer);
+  // Ikuti perubahan system preference (kalau user belum set manual)
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+    if (!localStorage.getItem('theme')) applyDark(e.matches);
+  });
+})();
 
 async function fetchData() {
   try {
