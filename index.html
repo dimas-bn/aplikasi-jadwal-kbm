@@ -117,6 +117,30 @@
   .pg-penting {border-left:4px solid #d97706;background:#fffbeb}
   .pg-libur   {border-left:4px solid #15875c;background:#eefcf5}
   .pg-kegiatan{border-left:4px solid #7c3aed;background:#f5f3ff}
+  /* Kalender */
+  .kal-header{display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid #e2e8f0}
+  .kal-dayname{text-align:center;font-size:11px;font-weight:700;color:#64748b;padding:8px 2px;text-transform:uppercase}
+  .kal-grid{display:grid;grid-template-columns:repeat(7,1fr)}
+  .kal-cell{min-height:80px;border-right:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;padding:4px;cursor:pointer;transition:background .1s;position:relative}
+  .kal-cell:nth-child(7n){border-right:none}
+  .kal-cell:hover{background:#f8fafc}
+  .kal-cell.today{background:#eaf1fb}
+  .kal-cell.other-month .kal-date{color:#cbd5e1}
+  .kal-cell.selected{outline:2px solid #1a4078;outline-offset:-1px}
+  .kal-date{font-size:12px;font-weight:600;color:#334155;margin-bottom:2px;width:22px;height:22px;display:flex;align-items:center;justify-content:center;border-radius:50%}
+  .kal-cell.today .kal-date{background:#1a4078;color:#fff}
+  .kal-dot{height:5px;border-radius:3px;margin-bottom:2px;font-size:10px;padding:0 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .kal-more{font-size:10px;color:#94a3b8;margin-top:1px}
+  /* Dark mode kalender */
+  .dark .kal-header{border-color:#334155}
+  .dark .kal-dayname{color:#475569}
+  .dark .kal-cell{border-color:#334155}
+  .dark .kal-cell:hover{background:#1e293b}
+  .dark .kal-cell.today{background:#1e3a5f}
+  .dark .kal-cell.other-month .kal-date{color:#334155}
+  .dark .kal-date{color:#cbd5e1}
+  .dark .pg-info{background:#1e293b}.dark .pg-penting{background:#1c1a08}
+  .dark .pg-libur{background:#0a1f15}.dark .pg-kegiatan{background:#1a1028}
 
   /* ── DARK MODE ── */
   .dark body{background:#0f172a;color:#e2e8f0}
@@ -260,6 +284,7 @@
       <button class="nav-btn shrink-0 px-5 sm:px-6 py-3.5 text-[15px] font-semibold text-slate-500 dark:text-slate-400 border-b-[3px] border-transparent hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 -mb-px transition-colors" data-tab="wali-kelas" onclick="showTab('wali-kelas',this)">🧑‍🏫 Wali Kelas</button>
       <button class="nav-btn shrink-0 px-5 sm:px-6 py-3.5 text-[15px] font-semibold text-slate-500 dark:text-slate-400 border-b-[3px] border-transparent hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 -mb-px transition-colors" data-tab="piket-guru" onclick="showTab('piket-guru',this)">🗓️ Piket Guru</button>
       <button class="nav-btn shrink-0 px-5 sm:px-6 py-3.5 text-[15px] font-semibold text-slate-500 dark:text-slate-400 border-b-[3px] border-transparent hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 -mb-px transition-colors" data-tab="pengumuman" onclick="showTab('pengumuman',this)">📢 Pengumuman</button>
+      <button class="nav-btn shrink-0 px-5 sm:px-6 py-3.5 text-[15px] font-semibold text-slate-500 dark:text-slate-400 border-b-[3px] border-transparent hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 -mb-px transition-colors" data-tab="kalender" onclick="showTab('kalender',this)">📆 Kalender</button>
     </div>
   </nav>
 
@@ -412,6 +437,32 @@
     <!-- TAB: PENGUMUMAN -->
     <section id="tab-pengumuman" class="tab-section hidden">
       <div id="pengumumanListPublik"></div>
+    </section>
+
+    <!-- TAB: KALENDER AKADEMIK -->
+    <section id="tab-kalender" class="tab-section hidden">
+
+      <!-- Navigasi bulan & tahun -->
+      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 mb-4 flex items-center gap-3 shadow-sm">
+        <button onclick="kalNav(-1)" class="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold transition-colors">‹</button>
+        <div class="flex-1 text-center">
+          <div id="kalBulanLabel" class="font-bold text-base text-slate-800 dark:text-slate-100"></div>
+        </div>
+        <button onclick="kalNav(1)" class="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold transition-colors">›</button>
+        <button onclick="kalGoToday()" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-brand-600 text-white hover:bg-brand-700 transition-colors">Hari Ini</button>
+      </div>
+
+      <!-- Legend kategori -->
+      <div class="flex flex-wrap gap-3 mb-4 px-1" id="kalLegend"></div>
+
+      <!-- Grid kalender -->
+      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm overflow-hidden mb-4">
+        <div id="kalGrid"></div>
+      </div>
+
+      <!-- Daftar event bulan ini -->
+      <div id="kalDaftar"></div>
+
     </section>
 
   </main>
@@ -734,6 +785,188 @@ function toggleDark() {
     if (!localStorage.getItem('theme')) applyDark(e.matches);
   });
 })();
+
+// ── KALENDER AKADEMIK ─────────────────────────────────────────
+
+const KAT_PUB = {
+  'libur-nasional': { label:'🇮🇩 Libur Nasional', color:'#dc2626', bg:'#fef2f2', dot:'#dc2626' },
+  'libur-sekolah':  { label:'🏫 Libur Sekolah',   color:'#d97706', bg:'#fffbeb', dot:'#d97706' },
+  'ujian':          { label:'📝 Ujian',            color:'#7c3aed', bg:'#f5f3ff', dot:'#7c3aed' },
+  'kegiatan':       { label:'🎉 Kegiatan',         color:'#15875c', bg:'#f0fdf4', dot:'#15875c' },
+  'lainnya':        { label:'📌 Lainnya',          color:'#1d5fa8', bg:'#eff6ff', dot:'#1d5fa8' },
+};
+const NAMA_BULAN_KAL = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const NAMA_HARI_KAL  = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+
+let _kalTahun  = new Date().getFullYear();
+let _kalBulan  = new Date().getMonth(); // 0-11
+let _kalSelect = null; // tanggal yang diklik
+
+function kalNav(delta) {
+  _kalBulan += delta;
+  if (_kalBulan > 11) { _kalBulan = 0; _kalTahun++; }
+  if (_kalBulan < 0)  { _kalBulan = 11; _kalTahun--; }
+  renderKalender();
+}
+
+function kalGoToday() {
+  _kalTahun = new Date().getFullYear();
+  _kalBulan = new Date().getMonth();
+  _kalSelect = null;
+  renderKalender();
+}
+
+// Kembangkan event multi-hari menjadi set tanggal
+function buildEventMap(list) {
+  const map = {}; // 'YYYY-MM-DD' → [event, ...]
+  list.forEach(e => {
+    const start = new Date(e.tglMulai + 'T00:00:00');
+    const end   = new Date((e.tglSelesai || e.tglMulai) + 'T00:00:00');
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      const key = d.toISOString().slice(0, 10);
+      if (!map[key]) map[key] = [];
+      map[key].push(e);
+    }
+  });
+  return map;
+}
+
+function renderKalender() {
+  const kalList = D.kalender || [];
+  const today   = new Date(); today.setHours(0,0,0,0);
+  const todayStr= today.toISOString().slice(0,10);
+  const eventMap= buildEventMap(kalList);
+
+  // Header label
+  document.getElementById('kalBulanLabel').textContent =
+    `${NAMA_BULAN_KAL[_kalBulan]} ${_kalTahun}`;
+
+  // Legend
+  const usedKat = new Set(kalList.map(e => e.kategori));
+  document.getElementById('kalLegend').innerHTML = [...usedKat].map(k => {
+    const kt = KAT_PUB[k] || KAT_PUB.lainnya;
+    return `<div class="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+      <span class="w-3 h-3 rounded-sm shrink-0" style="background:${kt.dot}"></span>
+      <span>${kt.label}</span>
+    </div>`;
+  }).join('');
+
+  // Hitung sel kalender
+  const firstDay = new Date(_kalTahun, _kalBulan, 1).getDay(); // 0=Min
+  const daysInMonth = new Date(_kalTahun, _kalBulan + 1, 0).getDate();
+  const daysInPrev  = new Date(_kalTahun, _kalBulan, 0).getDate();
+  const totalCells  = Math.ceil((firstDay + daysInMonth) / 7) * 7;
+
+  // Header hari
+  let html = `<div class="kal-header">${NAMA_HARI_KAL.map(d =>
+    `<div class="kal-dayname">${d}</div>`).join('')}</div>
+  <div class="kal-grid">`;
+
+  for (let i = 0; i < totalCells; i++) {
+    let tanggal, bulan, tahun, isOther = false;
+    if (i < firstDay) {
+      tanggal = daysInPrev - firstDay + i + 1;
+      bulan   = _kalBulan - 1; tahun = _kalTahun;
+      if (bulan < 0) { bulan = 11; tahun--; }
+      isOther = true;
+    } else if (i >= firstDay + daysInMonth) {
+      tanggal = i - firstDay - daysInMonth + 1;
+      bulan   = _kalBulan + 1; tahun = _kalTahun;
+      if (bulan > 11) { bulan = 0; tahun++; }
+      isOther = true;
+    } else {
+      tanggal = i - firstDay + 1;
+      bulan   = _kalBulan; tahun = _kalTahun;
+    }
+    const mm  = String(bulan + 1).padStart(2,'0');
+    const dd  = String(tanggal).padStart(2,'0');
+    const key = `${tahun}-${mm}-${dd}`;
+    const events = eventMap[key] || [];
+    const isToday    = key === todayStr;
+    const isSelected = key === _kalSelect;
+
+    const dots = events.slice(0,3).map(e => {
+      const kt = KAT_PUB[e.kategori] || KAT_PUB.lainnya;
+      return `<div class="kal-dot" style="background:${kt.dot};color:#fff">${e.judul}</div>`;
+    }).join('');
+    const more = events.length > 3
+      ? `<div class="kal-more">+${events.length-3} lainnya</div>` : '';
+
+    html += `<div class="kal-cell ${isOther?'other-month':''} ${isToday?'today':''} ${isSelected?'selected':''}"
+      onclick="kalSelectDate('${key}')">
+      <div class="kal-date">${tanggal}</div>
+      ${dots}${more}
+    </div>`;
+  }
+  html += '</div>';
+  document.getElementById('kalGrid').innerHTML = html;
+
+  // Render daftar event bulan ini
+  renderKalDaftar(eventMap);
+}
+
+function kalSelectDate(key) {
+  _kalSelect = _kalSelect === key ? null : key;
+  renderKalender();
+}
+
+function renderKalDaftar(eventMap) {
+  const kalList = D.kalender || [];
+
+  // Kalau ada tanggal terpilih, tampilkan event di tanggal itu
+  if (_kalSelect) {
+    const events = eventMap[_kalSelect] || [];
+    if (!events.length) {
+      document.getElementById('kalDaftar').innerHTML =
+        `<div class="text-center py-6 text-slate-400 dark:text-slate-500 text-sm">Tidak ada event pada ${formatTglPub(_kalSelect)}</div>`;
+      return;
+    }
+    document.getElementById('kalDaftar').innerHTML =
+      `<div class="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-2 px-1">Event — ${formatTglPub(_kalSelect)}</div>` +
+      events.map(e => buildKalCard(e)).join('');
+    return;
+  }
+
+  // Default: tampilkan semua event bulan ini, diurutkan tanggal
+  const bulanStr = `${_kalTahun}-${String(_kalBulan+1).padStart(2,'0')}`;
+  const evBulan  = kalList
+    .filter(e => (e.tglMulai||'').startsWith(bulanStr) ||
+                 (e.tglSelesai||'').startsWith(bulanStr) ||
+                 (e.tglMulai <= bulanStr+'-31' && e.tglSelesai >= bulanStr+'-01'))
+    .sort((a,b) => (a.tglMulai||'').localeCompare(b.tglMulai||''));
+
+  if (!evBulan.length) {
+    document.getElementById('kalDaftar').innerHTML =
+      `<div class="text-center py-8 text-slate-400 dark:text-slate-500"><div class="text-3xl mb-2">📭</div><div class="text-sm">Tidak ada event di bulan ini</div></div>`;
+    return;
+  }
+
+  document.getElementById('kalDaftar').innerHTML =
+    `<div class="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-2 px-1">Event Bulan Ini (${evBulan.length})</div>` +
+    evBulan.map(e => buildKalCard(e)).join('');
+}
+
+function buildKalCard(e) {
+  const kt  = KAT_PUB[e.kategori] || KAT_PUB.lainnya;
+  const tgl = e.tglMulai === e.tglSelesai
+    ? formatTglPub(e.tglMulai)
+    : formatTglPub(e.tglMulai) + ' – ' + formatTglPub(e.tglSelesai);
+  return `<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 mb-3 shadow-sm flex gap-3 items-start">
+    <div class="w-1 self-stretch rounded-full shrink-0" style="background:${kt.dot}"></div>
+    <div class="flex-1 min-w-0">
+      <div class="font-semibold text-slate-800 dark:text-slate-100 text-sm">${e.judul}</div>
+      <div class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">${tgl}</div>
+      ${e.keterangan ? `<div class="text-xs text-slate-500 dark:text-slate-400 mt-1">${e.keterangan}</div>` : ''}
+    </div>
+    <span class="shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full" style="background:${kt.bg};color:${kt.color}">${kt.label}</span>
+  </div>`;
+}
+
+function formatTglPub(str) {
+  if (!str) return '—';
+  const d = new Date(str + 'T00:00:00');
+  return d.toLocaleDateString('id-ID', { weekday:'short', day:'numeric', month:'long' });
+}
 
 async function fetchData() {
   try {
@@ -1293,6 +1526,7 @@ function showTab(id, btn){
   if(id==='wali-kelas')renderWaliPublik();
   if(id==='piket-guru')renderPiketPublik();
   if(id==='pengumuman')renderPengumumanPublik();
+  if(id==='kalender')renderKalender();
 }
 
 fetchData();
