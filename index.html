@@ -129,7 +129,10 @@
   .kal-cell.selected{outline:2px solid #1a4078;outline-offset:-1px}
   .kal-date{font-size:12px;font-weight:600;color:#334155;margin-bottom:2px;width:22px;height:22px;display:flex;align-items:center;justify-content:center;border-radius:50%}
   .kal-cell.today .kal-date{background:#1a4078;color:#fff}
-  .kal-dot{height:15px;border-radius:3px;margin-bottom:2px;font-size:10px;padding:0 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .kal-dot{height:4px;border-radius:99px;margin-bottom:3px;flex-shrink:0}
+  .kal-event{display:flex;align-items:center;gap:3px;margin-bottom:2px;overflow:hidden}
+  .kal-label{font-size:10px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#334155}
+  .dark .kal-label{color:#cbd5e1}
   .kal-more{font-size:10px;color:#94a3b8;margin-top:1px}
   /* Dark mode kalender */
   .dark .kal-header{border-color:#334155}
@@ -887,7 +890,10 @@ function renderKalender() {
 
     const dots = events.slice(0,3).map(e => {
       const kt = KAT_PUB[e.kategori] || KAT_PUB.lainnya;
-      return `<div class="kal-dot" style="background:${kt.dot};color:#fff">${e.judul}</div>`;
+      return `<div class="kal-event">
+        <div class="kal-dot shrink-0" style="width:8px;background:${kt.dot}"></div>
+        <span class="kal-label">${e.judul}</span>
+      </div>`;
     }).join('');
     const more = events.length > 3
       ? `<div class="kal-more">+${events.length-3} lainnya</div>` : '';
