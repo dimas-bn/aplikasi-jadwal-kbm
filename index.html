@@ -309,26 +309,45 @@
         </div>
       </div>
 
-      <!-- Filter kelas & tingkat -->
-      <div class="bg-white border border-slate-200 rounded-xl p-4 mb-4 flex flex-wrap gap-4 items-center shadow-sm">
-        <div class="flex items-center gap-2">
-          <label class="text-sm font-semibold text-slate-500">Tingkat</label>
-          <select id="filterTingkatHariIni" onchange="renderHariIni()" class="rounded-lg border border-slate-300 text-base px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
-            <option value="">Semua Tingkat</option>
-            <option value="KELAS X">Kelas X</option>
-            <option value="KELAS XI">Kelas XI</option>
-            <option value="KELAS XII">Kelas XII</option>
-          </select>
+      <!-- Filter kelas & JP -->
+      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 mb-4 shadow-sm">
+        <!-- Baris 1: Kelas Saya -->
+        <div class="flex flex-wrap gap-3 items-center mb-3 pb-3 border-b border-slate-100 dark:border-slate-700">
+          <div class="flex items-center gap-2 flex-1 min-w-[200px]">
+            <span class="text-xl shrink-0">🎒</span>
+            <div class="flex-1">
+              <div class="text-xs font-semibold text-slate-400 dark:text-slate-500 mb-1">KELAS SAYA</div>
+              <select id="filterKelasSaya" onchange="simpanKelasSaya()" class="w-full rounded-lg border border-slate-300 dark:border-slate-600 text-sm px-3 py-2 bg-white dark:bg-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                <option value="">— Pilih kelas saya —</option>
+              </select>
+            </div>
+          </div>
+          <div id="kelasSayaBadge" class="hidden items-center gap-2 bg-brand-50 dark:bg-brand-900/30 border border-brand-200 dark:border-brand-800 rounded-xl px-4 py-2.5">
+            <span class="text-brand-700 dark:text-brand-300 font-bold text-sm" id="kelasSayaNama"></span>
+            <button onclick="hapusKelasSaya()" class="text-brand-400 hover:text-brand-700 dark:hover:text-brand-200 text-xs font-bold ml-1" title="Hapus pilihan">✕</button>
+          </div>
         </div>
-        <div class="flex items-center gap-2">
-          <label class="text-sm font-semibold text-slate-500">Tampilkan JP</label>
-          <select id="filterJPHariIni" onchange="renderHariIni()" class="rounded-lg border border-slate-300 text-base px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
-            <option value="semua">Semua JP</option>
-            <option value="sekarang">JP Sekarang Saja</option>
-            <option value="sisa">JP Tersisa Hari Ini</option>
-          </select>
+        <!-- Baris 2: Filter tambahan -->
+        <div class="flex flex-wrap gap-3 items-center">
+          <div class="flex items-center gap-2">
+            <label class="text-xs font-semibold text-slate-400 dark:text-slate-500">TAMPILKAN</label>
+            <select id="filterJPHariIni" onchange="renderHariIni()" class="rounded-lg border border-slate-300 dark:border-slate-600 text-sm px-3 py-2 bg-white dark:bg-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500">
+              <option value="semua">Semua JP</option>
+              <option value="sekarang">JP Sekarang Saja</option>
+              <option value="sisa">JP Tersisa Hari Ini</option>
+            </select>
+          </div>
+          <div class="flex items-center gap-2">
+            <label class="text-xs font-semibold text-slate-400 dark:text-slate-500">TINGKAT</label>
+            <select id="filterTingkatHariIni" onchange="renderHariIni()" class="rounded-lg border border-slate-300 dark:border-slate-600 text-sm px-3 py-2 bg-white dark:bg-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500">
+              <option value="">Semua Tingkat</option>
+              <option value="KELAS X">Kelas X</option>
+              <option value="KELAS XI">Kelas XI</option>
+              <option value="KELAS XII">Kelas XII</option>
+            </select>
+          </div>
+          <div id="hariIniStats" class="flex gap-4 ml-auto flex-wrap"></div>
         </div>
-        <div id="hariIniStats" class="flex gap-4 ml-auto flex-wrap"></div>
       </div>
 
       <!-- Piket hari ini -->
@@ -992,6 +1011,7 @@ async function fetchData() {
   document.getElementById('app').classList.remove('hidden');
   document.getElementById('headerSub').textContent = 'SMA Negeri 1 Baturetno — Tahun Ajaran 2026/2027';
   initSelects();
+  initKelasSaya();
   renderHariIni();
   renderPengumumanBanner();
   renderJadwalKelas();
@@ -1215,6 +1235,72 @@ function tickJam() {
   }
 }
 
+// ── KELAS SAYA ────────────────────────────────────────────────
+
+function initKelasSaya() {
+  const sel = document.getElementById('filterKelasSaya');
+  if (!sel) return;
+
+  // Isi dropdown dengan semua kelas (urutan numerik)
+  const sorted = [...(D.kelas || [])].sort(kelasSort);
+  sel.innerHTML = '<option value="">— Pilih kelas saya —</option>' +
+    sorted.map(k => `<option value="${k}">${k}</option>`).join('');
+
+  // Restore pilihan dari localStorage
+  const saved = localStorage.getItem('kelasSaya');
+  if (saved && D.kelas && D.kelas.includes(saved)) {
+    sel.value = saved;
+    updateKelasSayaBadge(saved);
+  } else {
+    updateKelasSayaBadge('');
+  }
+}
+
+function simpanKelasSaya() {
+  const sel   = document.getElementById('filterKelasSaya');
+  const kelas = sel.value;
+  if (kelas) {
+    localStorage.setItem('kelasSaya', kelas);
+    updateKelasSayaBadge(kelas);
+  } else {
+    hapusKelasSaya();
+    return;
+  }
+  // Reset filter tingkat agar tidak konflik
+  const ft = document.getElementById('filterTingkatHariIni');
+  if (ft) ft.value = '';
+  renderHariIni();
+}
+
+function hapusKelasSaya() {
+  localStorage.removeItem('kelasSaya');
+  const sel = document.getElementById('filterKelasSaya');
+  if (sel) sel.value = '';
+  updateKelasSayaBadge('');
+  renderHariIni();
+}
+
+function updateKelasSayaBadge(kelas) {
+  const badge = document.getElementById('kelasSayaBadge');
+  const nama  = document.getElementById('kelasSayaNama');
+  if (!badge || !nama) return;
+  if (kelas) {
+    nama.textContent = kelas;
+    badge.classList.remove('hidden');
+    badge.classList.add('flex');
+  } else {
+    badge.classList.add('hidden');
+    badge.classList.remove('flex');
+  }
+}
+
+function getKelasSaya() {
+  // Kembalikan kelas yang tersimpan, kalau ada dan masih valid
+  const saved = localStorage.getItem('kelasSaya');
+  if (saved && D.kelas && D.kelas.includes(saved)) return saved;
+  return null;
+}
+
 function renderHariIni() {
   const hari = getHariIni();
   const now  = new Date();
@@ -1253,6 +1339,7 @@ function renderHariIni() {
     return;
   }
 
+  const kelasSaya     = getKelasSaya(); // null jika belum dipilih
   const filterTingkat = document.getElementById('filterTingkatHariIni')?.value || '';
   const filterJP      = document.getElementById('filterJPHariIni')?.value || 'semua';
   const sekarang      = getJamSekarang();
@@ -1267,13 +1354,18 @@ function renderHariIni() {
     jamTampil = jamTampil.filter(j => parseJamAkhir(labels[j]) > sekarang);
   }
 
-  // Kumpulkan semua entri jadwal hari ini
+  // Kumpulkan entri jadwal hari ini
   let entries = [];
   jamTampil.forEach(jam => {
     const kd = (D.jadwal[hari] || {})[jam] || {};
     Object.entries(kd).forEach(([kelas, kode]) => {
       if (!kode) return;
-      if (filterTingkat && !kelas.startsWith(filterTingkat)) return;
+      // Prioritas filter: Kelas Saya > Tingkat > Semua
+      if (kelasSaya) {
+        if (kelas !== kelasSaya) return;
+      } else if (filterTingkat) {
+        if (!kelas.startsWith(filterTingkat)) return;
+      }
       const g = D.guru[String(kode)];
       entries.push({ jam, kelas, kode: String(kode), guru: g ? g.nama : `Kode ${kode}`, mapel: g ? g.mapel : '—' });
     });
@@ -1526,7 +1618,7 @@ function showTab(id, btn){
     btn.classList.remove('text-slate-500','border-transparent');
     btn.classList.add('text-brand-700','border-brand-600');
   }
-  if(id==='hari-ini')renderHariIni();
+  if(id==='hari-ini'){ initKelasSaya(); renderHariIni(); }
   if(id==='jadwal-guru')renderJadwalGuru();
   if(id==='jadwal-mapel'){ renderJadwalMapel(); }
   if(id==='wali-kelas')renderWaliPublik();
