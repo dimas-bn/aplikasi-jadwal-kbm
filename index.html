@@ -1053,10 +1053,14 @@ function getMapelIdx(nama) {
 }
 
 function renderJadwalKelas() {
-  const kelasId = document.getElementById('filterKelas').value;
+  const kelasId    = document.getElementById('filterKelas').value;
   const hariFilter = document.getElementById('filterHari').value;
-  const hariList = hariFilter ? [hariFilter] : HARI;
+  const hariList   = hariFilter ? [hariFilter] : HARI;
   const isSemuaHari = !hariFilter;
+
+  // Deteksi hari & JP yang sedang berlangsung sekarang
+  const hariAktif = getHariIni();
+  const jpAktif   = HARI.includes(hariAktif) ? getJPSekarang(hariAktif) : null;
 
   const usedMapel = new Set();
   hariList.forEach(h=>jamUntukHari(h).forEach(j=>{const kode=(D.jadwal[h]||{})[j]||{}; const k=kode[kelasId]; if(k){const g=D.guru[String(k)]; if(g)usedMapel.add(g.mapel);}}));
@@ -1064,46 +1068,77 @@ function renderJadwalKelas() {
 
   document.getElementById('legendKelas').innerHTML = mapelArr.map(m=>{
     const i=getMapelIdx(m);
-    return `<div class="flex items-center gap-1.5 text-slate-500"><span class="w-3.5 h-3.5 rounded-sm shrink-0" style="background:${COLORS[i%15]};border:1.5px solid ${BORDERS[i%15]}"></span><span>${m}</span></div>`;
+    return `<div class="flex items-center gap-1.5 text-slate-500 dark:text-slate-400"><span class="w-3.5 h-3.5 rounded-sm shrink-0" style="background:${COLORS[i%15]};border:1.5px solid ${BORDERS[i%15]}"></span><span>${m}</span></div>`;
   }).join('');
 
   let html = `<table class="jadwal-tbl w-full text-sm min-w-[620px]">
     <thead><tr>
       <th class="px-3 py-3 text-center font-semibold w-24 bg-brand-700 text-white">Hari</th>
       <th class="px-2 py-3 text-center font-semibold w-10 bg-brand-700 text-white">JP</th>
-      <th class="px-2 py-3 text-center font-semibold w-24 bg-brand-700 text-white">Waktu</th>
+      <th class="px-2 py-3 text-center font-semibold w-28 bg-brand-700 text-white">Waktu</th>
       <th class="px-3 py-3 text-left font-semibold bg-brand-700 text-white">Mata Pelajaran</th>
       <th class="px-3 py-3 text-left font-semibold bg-brand-700 text-white">Guru</th>
     </tr></thead><tbody>`;
+
+  let activeRowId = null;
+
   hariList.forEach((hari, hIdx)=>{
     const jamList = jamUntukHari(hari);
     jamList.forEach((jam,ji)=>{
-      const kd = (D.jadwal[hari]||{})[jam]||{};
-      const kode = kd[kelasId];
-      const g = kode ? D.guru[String(kode)] : null;
+      const kd    = (D.jadwal[hari]||{})[jam]||{};
+      const kode  = kd[kelasId];
+      const g     = kode ? D.guru[String(kode)] : null;
       const isConf = D.conflicts.some(c=>c.hari===hari&&c.jam===jam&&c.kode===parseInt(kode));
-      const i = g ? getMapelIdx(g.mapel) : 0;
-      // Garis pembatas tebal di pergantian hari (saat "Semua Hari" dipilih)
+      const i     = g ? getMapelIdx(g.mapel) : 0;
       const isDividerRow = isSemuaHari && ji===0 && hIdx>0;
-      html += `<tr class="border-t border-slate-100 hover:bg-slate-50/70 ${isDividerRow?'hari-divider':''}">
-        <td class="px-3 py-2 text-center font-bold text-slate-600 bg-slate-100 ${ji===0?'border-t-2 border-t-brand-500':''}">${ji===0?HARI_LENGKAP[hari]:''}</td>
-        <td class="px-2 py-2 text-center font-bold text-slate-600 bg-slate-100">${jam}</td>
-        <td class="px-2 py-2 text-center text-slate-400 whitespace-nowrap text-xs">${(labelUntukHari(hari)[jam]||'')}</td>`;
+
+      // Cek apakah baris ini sedang berlangsung
+      const isBerlangsung = hari === hariAktif && jam === jpAktif;
+      const rowId = isBerlangsung ? 'jp-aktif-row' : '';
+      if (isBerlangsung) activeRowId = rowId;
+
+      const rowBg = isBerlangsung
+        ? 'bg-brand-50 dark:bg-brand-900/20'
+        : 'hover:bg-slate-50/70 dark:hover:bg-slate-700/40';
+
+      html += `<tr id="${rowId}" class="border-t border-slate-100 dark:border-slate-700 ${rowBg} ${isDividerRow?'hari-divider':''}">
+        <td class="px-3 py-2 text-center font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700/50 ${ji===0?'border-t-2 border-t-brand-500':''}">${ji===0?HARI_LENGKAP[hari]:''}</td>
+        <td class="px-2 py-2 text-center font-bold ${isBerlangsung?'text-brand-700 dark:text-brand-300':'text-slate-600 dark:text-slate-300'} bg-slate-100 dark:bg-slate-700/50">
+          ${jam}${isBerlangsung?'<div class="text-[9px] font-bold text-brand-600 dark:text-brand-400 leading-none mt-0.5">▶ Kini</div>':''}
+        </td>
+        <td class="px-2 py-2 text-center whitespace-nowrap text-xs ${isBerlangsung?'text-brand-600 dark:text-brand-400 font-semibold':'text-slate-400 dark:text-slate-500'}">${(labelUntukHari(hari)[jam]||'')}</td>`;
+
       if (g) {
         html += `<td class="px-2 py-2">
-          <div class="slot rounded-md px-3 py-2 cursor-pointer ${isConf?'ring-2 ring-red-500':''}" style="background:${COLORS[i%15]};border-left:3px solid ${BORDERS[i%15]}" onclick="showDetail('${hari}',${jam},'${kelasId}',${kode})">
+          <div class="slot rounded-md px-3 py-2 cursor-pointer ${isConf?'ring-2 ring-red-500':''} ${isBerlangsung?'ring-2 ring-brand-400 dark:ring-brand-500':''}"
+               style="background:${COLORS[i%15]};border-left:3px solid ${BORDERS[i%15]}"
+               onclick="showDetail('${hari}',${jam},'${kelasId}',${kode})">
             <div class="font-bold text-sm leading-tight truncate" style="color:${BORDERS[i%15]}cc">${g.mapel}</div>
           </div></td>
-          <td class="px-3 py-2 text-sm text-slate-600">${g.nama}${isConf?' <span class="inline-block ml-1 px-2 py-0.5 rounded-full bg-red-100 text-red-700 text-xs font-bold">⚠ Bentrok</span>':''}</td>`;
+          <td class="px-3 py-2 text-sm ${isBerlangsung?'font-semibold text-slate-700 dark:text-slate-200':'text-slate-600 dark:text-slate-300'}">
+            ${g.nama}
+            ${isBerlangsung?'<span class="inline-block ml-1.5 px-2 py-0.5 rounded-full bg-brand-100 dark:bg-brand-900 text-brand-700 dark:text-brand-300 text-[10px] font-bold align-middle">▶ Berlangsung</span>':''}
+            ${isConf?'<span class="inline-block ml-1 px-2 py-0.5 rounded-full bg-red-100 text-red-700 text-xs font-bold">⚠ Bentrok</span>':''}
+          </td>`;
       } else {
-        html += `<td class="px-2 py-2"><div class="h-[42px] rounded-md border border-dashed border-slate-200 bg-slate-50/60"></div></td><td class="px-3 py-2 text-slate-300 text-sm">—</td>`;
+        html += `<td class="px-2 py-2"><div class="h-[42px] rounded-md border border-dashed border-slate-200 dark:border-slate-600 bg-slate-50/60 dark:bg-slate-700/30"></div></td>
+                 <td class="px-3 py-2 text-slate-300 dark:text-slate-600 text-sm">—</td>`;
       }
       html += '</tr>';
-      if(jam===4||jam===6) html+=`<tr><td colspan="5" class="text-center text-xs font-bold text-amber-700 bg-amber-50 py-2">— ISTIRAHAT —</td></tr>`;
+      if(jam===4||jam===6) html+=`<tr><td colspan="5" class="text-center text-xs font-bold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 py-2">— ISTIRAHAT —</td></tr>`;
     });
   });
+
   html += '</tbody></table>';
   document.getElementById('jadwalKelasWrap').innerHTML = html;
+
+  // Auto-scroll ke baris yang sedang berlangsung
+  if (activeRowId) {
+    setTimeout(() => {
+      const el = document.getElementById(activeRowId);
+      if (el) el.scrollIntoView({ behavior:'smooth', block:'center' });
+    }, 150);
+  }
 }
 
 function renderJadwalGuru() {
