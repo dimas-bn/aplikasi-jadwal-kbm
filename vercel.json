@@ -37,11 +37,6 @@
       ]
     }
   ],
-  "rewrites": [
-    { "source": "/((?!api|icons|sw.js|manifest.json|offline.html|404.html|_vercel).*)", "destination": "/index.html" }
-  ],
-  "redirects": [],
   "cleanUrls": true,
-  "trailingSlash": false,
-  "error404": "/404.html"
+  "trailingSlash": false
 }
