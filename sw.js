@@ -1,16 +1,16 @@
 // ============================================================
 //  Service Worker — Aplikasi Jadwal KBM SMANSABA
-//  Strategi: Cache First untuk aset statis,
-//            Network First untuk data jadwal dari Apps Script
+//  v3 — dengan halaman offline ramah
 // ============================================================
 
-const CACHE_NAME   = 'jadwal-smansaba-v2';
-const CACHE_STATIC = 'jadwal-static-v2';
+const CACHE_NAME   = 'jadwal-smansaba-v3';
+const CACHE_STATIC = 'jadwal-static-v3';
+const OFFLINE_URL  = '/offline.html';
 
-// Aset yang di-cache saat install (shell aplikasi)
 const STATIC_ASSETS = [
   '/',
   '/index.html',
+  '/offline.html',
   '/manifest.json',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
@@ -21,13 +21,9 @@ const STATIC_ASSETS = [
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_STATIC)
-      .then(cache => {
-        console.log('[SW] Pre-caching static assets');
-        // Cache satu per satu agar tidak gagal semua jika satu error
-        return Promise.allSettled(
-          STATIC_ASSETS.map(url => cache.add(url).catch(e => console.warn('[SW] Skip:', url, e)))
-        );
-      })
+      .then(cache => Promise.allSettled(
+        STATIC_ASSETS.map(url => cache.add(url).catch(e => console.warn('[SW] Skip:', url, e)))
+      ))
       .then(() => self.skipWaiting())
   );
 });
@@ -37,9 +33,8 @@ self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys =>
       Promise.all(
-        keys
-          .filter(k => k !== CACHE_NAME && k !== CACHE_STATIC)
-          .map(k => { console.log('[SW] Deleting old cache:', k); return caches.delete(k); })
+        keys.filter(k => k !== CACHE_NAME && k !== CACHE_STATIC)
+            .map(k => caches.delete(k))
       )
     ).then(() => self.clients.claim())
   );
@@ -49,61 +44,62 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
-  // 1. Request ke Apps Script (data jadwal) → Network First
-  //    Kalau offline, kembalikan respons offline
-  if (url.hostname.includes('script.google.com') || url.hostname.includes('script.googleusercontent.com')) {
+  // 1. Apps Script → Network only, offline fallback JSON
+  if (url.hostname.includes('script.google.com') ||
+      url.hostname.includes('script.googleusercontent.com')) {
     event.respondWith(
-      fetch(event.request.clone())
-        .catch(() => new Response(
-          JSON.stringify({ ok: false, msg: 'Anda sedang offline. Data jadwal tidak tersedia.' }),
-          { headers: { 'Content-Type': 'application/json' } }
-        ))
+      fetch(event.request.clone()).catch(() =>
+        new Response(
+          JSON.stringify({ ok:false, msg:'Anda sedang offline. Koneksi internet tidak tersedia.' }),
+          { headers: { 'Content-Type':'application/json' } }
+        )
+      )
     );
     return;
   }
 
-  // 2. Tailwind CDN → Cache First (jarang berubah)
+  // 2. Navigasi (buka halaman) → Network First, fallback ke cache lalu offline.html
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).catch(async () => {
+        const cached = await caches.match(event.request);
+        return cached || caches.match(OFFLINE_URL);
+      })
+    );
+    return;
+  }
+
+  // 3. Tailwind CDN → Cache First
   if (url.hostname === 'cdn.tailwindcss.com') {
     event.respondWith(
       caches.match(event.request).then(cached => {
         if (cached) return cached;
-        return fetch(event.request).then(response => {
-          if (response.ok) {
-            const clone = response.clone();
-            caches.open(CACHE_STATIC).then(c => c.put(event.request, clone));
-          }
-          return response;
+        return fetch(event.request).then(res => {
+          if (res.ok) caches.open(CACHE_STATIC).then(c => c.put(event.request, res.clone()));
+          return res;
         });
       })
     );
     return;
   }
 
-  // 3. Aset lokal (index.html, manifest, icons) → Cache First, update di background
+  // 4. Aset lokal → Stale While Revalidate
   if (url.origin === self.location.origin) {
     event.respondWith(
       caches.match(event.request).then(cached => {
-        const fetchPromise = fetch(event.request).then(response => {
-          if (response.ok) {
-            const clone = response.clone();
-            caches.open(CACHE_STATIC).then(c => c.put(event.request, clone));
-          }
-          return response;
-        }).catch(() => cached); // fallback ke cache jika network fail
-
-        return cached || fetchPromise;
+        const network = fetch(event.request).then(res => {
+          if (res.ok) caches.open(CACHE_STATIC).then(c => c.put(event.request, res.clone()));
+          return res;
+        }).catch(() => cached);
+        return cached || network;
       })
     );
     return;
   }
 
-  // 4. Request lain → langsung ke network
   event.respondWith(fetch(event.request));
 });
 
-// ── BACKGROUND SYNC (opsional, untuk update notifikasi) ──────
 self.addEventListener('message', event => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
+  if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
 });

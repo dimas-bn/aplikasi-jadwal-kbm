@@ -500,7 +500,7 @@
 </div>
 
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzjy9HJFwvLFt8Vivi87K_3Gh43F7_yk1mBNSUfzn77mCBoYnsQk9vjmY8z93chlMrk/exec';
+const SCRIPT_URL = 'GANTI_DENGAN_URL_APPS_SCRIPT';
 const HARI  = ['SENIN','SELASA','RABU','KAMIS','JUMAT'];
 const HARI_LENGKAP = {SENIN:'Senin',SELASA:'Selasa',RABU:'Rabu',KAMIS:'Kamis',JUMAT:'Jumat'};
 const JAM   = [1,2,3,4,5,6,7,8,9,10];
@@ -642,15 +642,18 @@ function runSearch() {
 
   // ── Piket ─────────────────────────────────────────────────
   if (searchCat === 'semua' || searchCat === 'piket') {
-    Object.entries(D.piket || {}).forEach(([hari, kodeList]) => {
-      kodeList.forEach(kode => {
-        const g = kode ? D.guru[kode] : null;
+    Object.entries(D.piket || {}).forEach(([hari, slotList]) => {
+      slotList.forEach(s => {
+        const kode = typeof s === 'object' ? s.kode : s;
+        const ket  = typeof s === 'object' ? (s.ket || '') : '';
+        const pin  = typeof s === 'object' ? s.pin : false;
+        const g = kode ? D.guru[String(kode)] : null;
         if (!g) return;
-        if (g.nama.toLowerCase().includes(q) || kode.includes(q)) {
+        if (g.nama.toLowerCase().includes(q) || String(kode).includes(q) || ket.toLowerCase().includes(q)) {
           results.push({
             type:'piket', icon:'🗓️', iconBg:'#fdecea', iconColor:'#c0392b',
-            title: g.nama,
-            sub: `Piket hari ${HARI_LENGKAP[hari] || hari}`,
+            title: (pin ? '📌 ' : '') + g.nama,
+            sub: `Piket hari ${HARI_LENGKAP[hari] || hari}${ket ? ' · ' + ket : ''}`,
             action: () => { closeSearch(); showTab('piket-guru', document.querySelector('[data-tab=piket-guru]')); },
             q
           });
@@ -1003,8 +1006,65 @@ async function fetchData() {
     D = await res.json();
     if (!D.ok) throw new Error(D.msg || 'Server mengembalikan error');
   } catch(err) {
-    document.getElementById('loading').innerHTML =
-      '<div class="flex flex-col items-center gap-2 text-red-600"><span class="text-2xl">⚠️</span><span class="font-semibold">Gagal memuat data</span><span class="text-xs text-slate-400">'+err.message+'</span></div>';
+    const isOffline = !navigator.onLine;
+    document.getElementById('loading').innerHTML = `
+      <div class="flex flex-col items-center justify-center min-h-[60vh] px-6 text-center max-w-md mx-auto" id="errorScreen">
+        <div class="mb-6">
+          ${isOffline ? `
+          <svg width="160" height="120" viewBox="0 0 160 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="80" cy="55" r="38" fill="#e8f0fb" stroke="#2b63b3" stroke-width="2"/>
+            <path d="M58 55 Q80 35 102 55" stroke="#2b63b3" stroke-width="3" stroke-linecap="round" fill="none"/>
+            <path d="M64 62 Q80 48 96 62" stroke="#2b63b3" stroke-width="3" stroke-linecap="round" fill="none"/>
+            <circle cx="80" cy="69" r="4" fill="#2b63b3"/>
+            <line x1="50" y1="25" x2="110" y2="95" stroke="#e74c3c" stroke-width="3" stroke-linecap="round"/>
+            <line x1="110" y1="25" x2="50" y2="95" stroke="#e74c3c" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="128" cy="90" r="18" fill="#fdecea" stroke="#e74c3c" stroke-width="1.5"/>
+            <text x="128" y="96" text-anchor="middle" font-size="18" fill="#e74c3c">!</text>
+          </svg>` : `
+          <svg width="160" height="120" viewBox="0 0 160 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="25" y="30" width="110" height="75" rx="10" fill="#e8f0fb" stroke="#2b63b3" stroke-width="2"/>
+            <rect x="25" y="30" width="110" height="28" rx="10" fill="#2b63b3"/>
+            <rect x="25" y="48" width="110" height="10" fill="#2b63b3"/>
+            <circle cx="40" cy="44" r="5" fill="white" fill-opacity="0.5"/>
+            <circle cx="56" cy="44" r="5" fill="white" fill-opacity="0.5"/>
+            <path d="M70 65 L90 65 M70 75 L100 75 M70 85 L85 85" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="125" cy="88" r="18" fill="#fdecea" stroke="#e74c3c" stroke-width="1.5"/>
+            <text x="125" y="94" text-anchor="middle" font-size="18" fill="#e74c3c">!</text>
+          </svg>`}
+        </div>
+        <h2 class="text-xl font-bold text-slate-700 dark:text-slate-200 mb-2">
+          ${isOffline ? 'Tidak Ada Koneksi' : 'Gagal Memuat Data'}
+        </h2>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mb-2 leading-relaxed">
+          ${isOffline
+            ? 'Koneksi internet terputus. Periksa jaringan Wi-Fi atau data seluler Anda, lalu coba lagi.'
+            : 'Server tidak dapat dihubungi saat ini. Mungkin sedang dalam pemeliharaan atau URL belum dikonfigurasi.'}
+        </p>
+        <p class="text-xs text-slate-300 dark:text-slate-600 font-mono mb-6">${err.message}</p>
+        <button onclick="location.reload()"
+          class="w-full max-w-xs px-6 py-3 bg-brand-600 hover:bg-brand-700 active:scale-95 text-white text-sm font-semibold rounded-xl transition-all shadow-sm mb-3">
+          🔄 Coba Lagi
+        </button>
+        ${isOffline ? `
+        <p class="text-xs text-slate-400 dark:text-slate-500" id="offlineHint">
+          Mendeteksi koneksi... halaman akan dimuat otomatis saat online kembali.
+        </p>` : ''}
+      </div>`;
+
+    // Auto-reload saat koneksi kembali online
+    window.addEventListener('online', () => {
+      document.getElementById('offlineHint') &&
+        (document.getElementById('offlineHint').textContent = '✅ Koneksi pulih! Memuat ulang...');
+      setTimeout(() => location.reload(), 800);
+    }, { once: true });
+
+    // Pantau status offline secara berkala juga
+    window.addEventListener('offline', () => {
+      const h = document.querySelector('#errorScreen h2');
+      if (h) h.textContent = 'Tidak Ada Koneksi';
+    });
+    return;
+      </div>`;
     return;
   }
   document.getElementById('loading').style.display='none';
@@ -1353,13 +1413,25 @@ function renderHariIni() {
   const piketList = (D.piket || {})[hari] || [];
   const piketEl   = document.getElementById('piketHariIni');
   if (piketEl) {
-    if (HARI.includes(hari) && piketList.length) {
-      const chips = piketList.map(kode => {
-        const g = kode ? D.guru[kode] : null;
-        return g ? `<div class="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-sm"><span class="font-extrabold text-brand-700">${kode}</span><span class="text-slate-700">${g.nama.split(',')[0]}</span></div>` : '';
+    const filled = piketList.filter(s => s && (s.kode || (typeof s === 'string' && s)));
+    if (HARI.includes(hari) && filled.length) {
+      const chips = filled.map(s => {
+        const kode     = typeof s === 'object' ? s.kode : s;
+        const isPinned = typeof s === 'object' ? s.pin  : false;
+        const ket      = typeof s === 'object' ? (s.ket || '') : '';
+        const g = kode ? D.guru[String(kode)] : null;
+        if (!g) return '';
+        return `<div class="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm ${isPinned
+          ? 'bg-brand-50 dark:bg-brand-900/30 border border-brand-200 dark:border-brand-700'
+          : 'bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600'}">
+          ${isPinned ? '<span class="text-sm">📌</span>' : ''}
+          <span class="font-extrabold text-brand-700 dark:text-brand-400 text-xs">${kode}</span>
+          <span class="text-slate-700 dark:text-slate-200">${g.nama.split(',')[0]}</span>
+          ${ket ? `<span class="text-[11px] text-slate-400 dark:text-slate-500">· ${ket}</span>` : ''}
+        </div>`;
       }).filter(Boolean).join('');
-      piketEl.innerHTML = `<div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-        <div class="text-sm font-bold text-slate-500 mb-2">📋 Guru Piket Hari Ini</div>
+      piketEl.innerHTML = `<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 shadow-sm">
+        <div class="text-sm font-bold text-slate-500 dark:text-slate-400 mb-2">📋 Guru Piket Hari Ini <span class="font-normal text-slate-400">(${filled.length} guru)</span></div>
         <div class="flex flex-wrap gap-2">${chips || '<span class="text-slate-400 text-sm">Belum ada data piket</span>'}</div>
       </div>`;
     } else {
@@ -1626,15 +1698,50 @@ function renderPiketPublik() {
   cont.innerHTML = HARI.map(hari => {
     const slotList = (D.piket || {})[hari] || [];
     const namaHari = HARI_LENGKAP[hari];
-    const items = Array.from({length:7}, (_,i) => {
-      const kode = slotList[i];
-      const g = kode ? D.guru[kode] : null;
-      return g
-        ? `<div class="flex items-center gap-2 bg-slate-50 rounded-lg px-3 py-2"><span class="font-extrabold text-brand-700 text-sm w-6">${kode}</span><span class="text-sm text-slate-700 truncate">${g.nama}</span></div>`
-        : `<div class="flex items-center gap-2 bg-slate-50/50 rounded-lg px-3 py-2 border border-dashed border-slate-200"><span class="text-sm text-slate-300">Slot ${i+1} — belum ditentukan</span></div>`;
-    }).join('');
-    return `<div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-      <div class="font-bold text-base text-brand-700 mb-3">📌 ${namaHari}</div>
+    // Filter hanya slot yang terisi
+    const filled = slotList.filter(s => s && (s.kode || (typeof s === 'string' && s)));
+    if (!filled.length) {
+      return `<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 shadow-sm">
+        <div class="font-bold text-base text-brand-700 dark:text-brand-400 mb-3">📅 ${namaHari}</div>
+        <div class="text-sm text-slate-400 dark:text-slate-500 italic">Belum ada data piket</div>
+      </div>`;
+    }
+    const items = filled.map((s, i) => {
+      // Support format lama (string) maupun format baru (object)
+      const kode  = typeof s === 'object' ? s.kode : s;
+      const isPinned = typeof s === 'object' ? s.pin : false;
+      const ket   = typeof s === 'object' ? (s.ket || '') : '';
+      const g = kode ? D.guru[String(kode)] : null;
+      if (!g) return '';
+      return `<div class="flex items-start gap-3 rounded-xl px-3.5 py-2.5 ${isPinned
+        ? 'bg-brand-50 dark:bg-brand-900/30 border border-brand-200 dark:border-brand-700'
+        : 'bg-slate-50 dark:bg-slate-700/40 border border-slate-100 dark:border-slate-700'}">
+        <div class="mt-0.5 shrink-0 w-6 text-center">
+          ${isPinned
+            ? `<span class="text-base" title="Guru Utama Piket">📌</span>`
+            : `<span class="font-extrabold text-sm ${i < 9 ? 'text-brand-600 dark:text-brand-400' : 'text-slate-400'}">${i+1}</span>`}
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="font-semibold text-sm ${isPinned ? 'text-brand-700 dark:text-brand-300' : 'text-slate-700 dark:text-slate-200'} truncate">
+            ${g.nama}
+            ${isPinned ? '<span class="ml-1.5 text-[10px] font-bold bg-brand-100 dark:bg-brand-900 text-brand-700 dark:text-brand-300 px-1.5 py-0.5 rounded-full align-middle">Utama</span>' : ''}
+          </div>
+          ${ket ? `<div class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">${ket}</div>` : ''}
+        </div>
+        <span class="text-[11px] font-bold text-slate-400 dark:text-slate-500 shrink-0 mt-0.5">#${kode}</span>
+      </div>`;
+    }).filter(Boolean).join('');
+
+    // Pisahkan guru utama (pin) dan reguler untuk tampilan
+    const pinnedCount = filled.filter(s => typeof s === 'object' && s.pin).length;
+    return `<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 shadow-sm">
+      <div class="flex items-center justify-between mb-3">
+        <div class="font-bold text-base text-brand-700 dark:text-brand-400">📅 ${namaHari}</div>
+        <div class="flex items-center gap-2">
+          ${pinnedCount ? `<span class="text-[11px] font-bold bg-brand-100 dark:bg-brand-900 text-brand-700 dark:text-brand-300 px-2 py-0.5 rounded-full">📌 ${pinnedCount} Utama</span>` : ''}
+          <span class="text-[11px] font-semibold text-slate-400 dark:text-slate-500">${filled.length} guru</span>
+        </div>
+      </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">${items}</div>
     </div>`;
   }).join('');
