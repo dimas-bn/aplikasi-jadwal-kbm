@@ -500,7 +500,7 @@
 </div>
 
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw3YBk8ZiYb6kGYbFLsyLN5Oo7SLjqBvtYmYvvS-tsJ9SfHlQCQZ7FHJAEhVJLSCbIP/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzqlIZYnvN2OvCUYhKa-4ieNj6jJtIVJ24BAd3KYnLCjpyAw4O_8DVbTdPRQxfzvUP7/exec';
 const HARI  = ['SENIN','SELASA','RABU','KAMIS','JUMAT'];
 const HARI_LENGKAP = {SENIN:'Senin',SELASA:'Selasa',RABU:'Rabu',KAMIS:'Kamis',JUMAT:'Jumat'};
 const JAM   = [1,2,3,4,5,6,7,8,9,10];
@@ -1419,14 +1419,24 @@ function renderHariIni() {
         const kode     = typeof s === 'object' ? s.kode : s;
         const isPinned = typeof s === 'object' ? s.pin  : false;
         const ket      = typeof s === 'object' ? (s.ket || '') : '';
-        const g = kode ? D.guru[String(kode)] : null;
+        if (!kode) return '';
+        // Cek guru atau karyawan
+        const isKaryawan = String(kode).startsWith('k_');
+        const g = isKaryawan
+          ? (D.karyawan||[]).find(k => k.id === kode)
+          : D.guru[String(kode)];
         if (!g) return '';
+        const nama    = isKaryawan ? g.nama : g.nama.split(',')[0];
+        const kodeTag = isKaryawan
+          ? ''
+          : `<span class="font-extrabold text-brand-700 dark:text-brand-400 text-xs">${kode}</span>`;
         return `<div class="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm ${isPinned
           ? 'bg-brand-50 dark:bg-brand-900/30 border border-brand-200 dark:border-brand-700'
           : 'bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600'}">
           ${isPinned ? '<span class="text-sm">📌</span>' : ''}
-          <span class="font-extrabold text-brand-700 dark:text-brand-400 text-xs">${kode}</span>
-          <span class="text-slate-700 dark:text-slate-200">${g.nama.split(',')[0]}</span>
+          ${kodeTag}
+          <span class="text-slate-700 dark:text-slate-200">${nama}</span>
+          ${isKaryawan ? '<span class="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-600 text-slate-500 dark:text-slate-300">Karyawan</span>' : ''}
           ${ket ? `<span class="text-[11px] text-slate-400 dark:text-slate-500">· ${ket}</span>` : ''}
         </div>`;
       }).filter(Boolean).join('');
