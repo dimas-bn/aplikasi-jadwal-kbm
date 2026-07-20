@@ -1005,6 +1005,8 @@ async function fetchData() {
     });
     D = await res.json();
     if (!D.ok) throw new Error(D.msg || 'Server mengembalikan error');
+    // Pastikan karyawan selalu array
+    if (!Array.isArray(D.karyawan)) D.karyawan = Object.values(D.karyawan || {});
   } catch(err) {
     const isOffline = !navigator.onLine;
     document.getElementById('loading').innerHTML = `
@@ -1420,11 +1422,16 @@ function renderHariIni() {
         if (!kode) return '';
         // Cek guru atau karyawan
         const isKaryawan = String(kode).startsWith('k_');
-        const g = isKaryawan
-          ? (D.karyawan||[]).find(k => k.id === kode)
-          : D.guru[String(kode)];
-        if (!g) return '';
-        const nama    = isKaryawan ? g.nama : g.nama.split(',')[0];
+        let g, nama;
+        if (isKaryawan) {
+          const karyawanList = Array.isArray(D.karyawan) ? D.karyawan : Object.values(D.karyawan || {});
+          g    = karyawanList.find(k => String(k.id).trim() === String(kode).trim());
+          nama = g ? g.nama : '(Karyawan)';
+        } else {
+          g = D.guru[String(kode)];
+          if (!g) return '';
+          nama = g.nama.split(',')[0];
+        }
         const kodeTag = isKaryawan
           ? ''
           : `<span class="font-extrabold text-brand-700 dark:text-brand-400 text-xs">${kode}</span>`;
@@ -1716,11 +1723,27 @@ function renderPiketPublik() {
     }
     const items = filled.map((s, i) => {
       // Support format lama (string) maupun format baru (object)
-      const kode  = typeof s === 'object' ? s.kode : s;
-      const isPinned = typeof s === 'object' ? s.pin : false;
-      const ket   = typeof s === 'object' ? (s.ket || '') : '';
-      const g = kode ? D.guru[String(kode)] : null;
-      if (!g) return '';
+      const kode     = typeof s === 'object' ? s.kode : s;
+      const isPinned = typeof s === 'object' ? s.pin  : false;
+      const ket      = typeof s === 'object' ? (s.ket || '') : '';
+      if (!kode) return '';
+
+      // Cek guru dulu, lalu karyawan
+      const isKaryawan = String(kode).startsWith('k_');
+      let g, nama, subLabel;
+      if (isKaryawan) {
+        // Cari di array karyawan — cocokkan dengan trim dan string comparison
+        const karyawanList = Array.isArray(D.karyawan) ? D.karyawan : Object.values(D.karyawan || {});
+        g = karyawanList.find(k => String(k.id).trim() === String(kode).trim());
+        nama     = g ? g.nama : '(Karyawan)';
+        subLabel = g ? (g.jabatan || 'Karyawan') : 'Karyawan';
+      } else {
+        g = D.guru[String(kode)];
+        if (!g) return ''; // guru tidak dikenal, skip
+        nama     = g.nama;
+        subLabel = g.mapel || '';
+      }
+
       return `<div class="flex items-start gap-3 rounded-xl px-3.5 py-2.5 ${isPinned
         ? 'bg-brand-50 dark:bg-brand-900/30 border border-brand-200 dark:border-brand-700'
         : 'bg-slate-50 dark:bg-slate-700/40 border border-slate-100 dark:border-slate-700'}">
@@ -1731,12 +1754,13 @@ function renderPiketPublik() {
         </div>
         <div class="flex-1 min-w-0">
           <div class="font-semibold text-sm ${isPinned ? 'text-brand-700 dark:text-brand-300' : 'text-slate-700 dark:text-slate-200'} truncate">
-            ${g.nama}
+            ${nama}
             ${isPinned ? '<span class="ml-1.5 text-[10px] font-bold bg-brand-100 dark:bg-brand-900 text-brand-700 dark:text-brand-300 px-1.5 py-0.5 rounded-full align-middle">Utama</span>' : ''}
           </div>
-          ${ket ? `<div class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">${ket}</div>` : ''}
+          ${subLabel ? `<div class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">${subLabel}${isKaryawan ? ' <span class="inline-block ml-1 px-1.5 py-0.5 bg-slate-100 dark:bg-slate-600 text-slate-500 dark:text-slate-400 rounded text-[10px] font-medium">Karyawan</span>' : ''}</div>` : ''}
+          ${ket ? `<div class="text-xs text-slate-400 dark:text-slate-500 mt-0.5 italic">${ket}</div>` : ''}
         </div>
-        <span class="text-[11px] font-bold text-slate-400 dark:text-slate-500 shrink-0 mt-0.5">#${kode}</span>
+        ${!isKaryawan ? `<span class="text-[11px] font-bold text-slate-400 dark:text-slate-500 shrink-0 mt-0.5">#${kode}</span>` : ''}
       </div>`;
     }).filter(Boolean).join('');
 
