@@ -1782,6 +1782,7 @@ function renderPiketPublik() {
     }).filter(Boolean).join('');
 
     // Pisahkan guru utama (pin) dan reguler untuk tampilan
+    // Muncul di tab Piket Harian, awalnya hanya guru, sekarang guru karyawan, baris 1792
     const pinnedCount = filled.filter(s => typeof s === 'object' && s.pin).length;
     return `<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 shadow-sm">
       <div class="flex items-center justify-between mb-3">
