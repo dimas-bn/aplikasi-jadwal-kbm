@@ -1811,5 +1811,153 @@ if ('serviceWorker' in navigator) {
       .catch(e => console.log('SW error:', e));
   });
 }
+
+// ── PWA INSTALL PROMPT ────────────────────────────────────────
+
+let deferredPrompt = null;
+const PWA_DISMISSED_KEY = 'pwa_dismissed_until';
+const PWA_INSTALLED_KEY = 'pwa_installed';
+
+// Tangkap event install dari browser (Chrome/Edge Android & Desktop)
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Tunda munculnya popup 3 detik setelah halaman siap
+  setTimeout(() => maybeShowPwa(), 3000);
+});
+
+// Deteksi sudah terinstall
+window.addEventListener('appinstalled', () => {
+  localStorage.setItem(PWA_INSTALLED_KEY, '1');
+  hidePwaPopup();
+  deferredPrompt = null;
+});
+
+function isIos() {
+  return /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+}
+
+function isInStandaloneMode() {
+  return window.matchMedia('(display-mode: standalone)').matches
+    || window.navigator.standalone === true;
+}
+
+function maybeShowPwa() {
+  // Jangan tampilkan kalau sudah install, atau sudah dismiss < 7 hari
+  if (localStorage.getItem(PWA_INSTALLED_KEY)) return;
+  if (isInStandaloneMode()) return;
+  const until = parseInt(localStorage.getItem(PWA_DISMISSED_KEY) || '0');
+  if (Date.now() < until) return;
+
+  // iOS Safari — tidak ada beforeinstallprompt, tampilkan panduan manual
+  if (isIos() && !deferredPrompt) {
+    document.getElementById('pwaInstallBtn').style.display = 'none';
+    document.getElementById('iosGuide').classList.remove('hidden');
+  }
+
+  showPwaPopup();
+}
+
+function showPwaPopup() {
+  const popup = document.getElementById('pwaPopup');
+  popup.classList.remove('hidden');
+  // Tutup saat klik backdrop
+  document.getElementById('pwaBackdrop').onclick = () => dismissPwa(false);
+}
+
+function hidePwaPopup() {
+  document.getElementById('pwaPopup').classList.add('hidden');
+}
+
+function dismissPwa(permanent) {
+  hidePwaPopup();
+  if (permanent) {
+    // Jangan tampilkan lagi selama 7 hari
+    localStorage.setItem(PWA_DISMISSED_KEY, String(Date.now() + 7 * 24 * 60 * 60 * 1000));
+  }
+}
+
+async function doInstall() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  if (outcome === 'accepted') {
+    localStorage.setItem(PWA_INSTALLED_KEY, '1');
+  } else {
+    dismissPwa(true);
+  }
+  deferredPrompt = null;
+  hidePwaPopup();
+}
+
+// iOS: muncul otomatis setelah 3 detik (karena tidak ada beforeinstallprompt)
+if (isIos() && !isInStandaloneMode()) {
+  setTimeout(() => maybeShowPwa(), 3000);
+}
 </script>
+<!-- PWA INSTALL POPUP -->
+<div id="pwaPopup" class="hidden fixed inset-0 z-[300] flex items-end sm:items-center justify-center p-4 sm:p-6">
+  <!-- Backdrop -->
+  <div id="pwaBackdrop" class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm"></div>
+  <!-- Card -->
+  <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-slide-up">
+    <!-- Header biru -->
+    <div class="bg-gradient-to-r from-brand-700 to-brand-600 px-5 pt-5 pb-8 text-white text-center">
+      <div class="w-16 h-16 rounded-2xl bg-white/15 flex items-center justify-center text-3xl mx-auto mb-3 shadow-lg">📅</div>
+      <div class="font-bold text-lg leading-tight">Aplikasi Jadwal KBM</div>
+      <div class="text-brand-100 text-xs mt-1">SMA Negeri 1 Baturetno</div>
+    </div>
+    <!-- Konten -->
+    <div class="px-5 pt-4 pb-2 -mt-4">
+      <div class="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-md border border-slate-100 dark:border-slate-700">
+        <p class="text-sm text-slate-600 dark:text-slate-300 text-center mb-4 leading-relaxed">
+          Pasang aplikasi ini di perangkat kamu untuk akses lebih cepat — tanpa perlu buka browser!
+        </p>
+        <!-- Fitur-fitur -->
+        <div class="grid grid-cols-3 gap-2 mb-5 text-center">
+          <div class="bg-brand-50 dark:bg-brand-900/30 rounded-xl p-2.5">
+            <div class="text-xl mb-1">⚡</div>
+            <div class="text-[11px] font-semibold text-brand-700 dark:text-brand-300 leading-tight">Lebih Cepat</div>
+          </div>
+          <div class="bg-brand-50 dark:bg-brand-900/30 rounded-xl p-2.5">
+            <div class="text-xl mb-1">📲</div>
+            <div class="text-[11px] font-semibold text-brand-700 dark:text-brand-300 leading-tight">Layaknya App</div>
+          </div>
+          <div class="bg-brand-50 dark:bg-brand-900/30 rounded-xl p-2.5">
+            <div class="text-xl mb-1">🔔</div>
+            <div class="text-[11px] font-semibold text-brand-700 dark:text-brand-300 leading-tight">Mudah Dibuka</div>
+          </div>
+        </div>
+        <!-- Tombol install -->
+        <button id="pwaInstallBtn" onclick="doInstall()"
+          class="w-full py-3 bg-brand-600 hover:bg-brand-700 active:scale-95 text-white font-bold text-sm rounded-xl transition-all shadow-sm mb-2">
+          📲 Pasang Sekarang
+        </button>
+        <button onclick="dismissPwa(true)"
+          class="w-full py-2.5 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 font-medium text-sm rounded-xl transition-colors">
+          Nanti saja
+        </button>
+      </div>
+    </div>
+    <!-- iOS guide (tersembunyi, hanya muncul di Safari iOS) -->
+    <div id="iosGuide" class="hidden px-5 pb-5">
+      <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-xl p-4 mt-1">
+        <p class="text-xs text-amber-800 dark:text-amber-300 font-semibold mb-2">Cara pasang di iPhone / iPad:</p>
+        <ol class="text-xs text-amber-700 dark:text-amber-400 space-y-1.5 list-none">
+          <li>1. Ketuk ikon <strong>Bagikan</strong> <span class="text-base">⬆️</span> di Safari</li>
+          <li>2. Pilih <strong>"Tambahkan ke Layar Utama"</strong></li>
+          <li>3. Ketuk <strong>Tambahkan</strong></li>
+        </ol>
+      </div>
+    </div>
+    <!-- Tutup -->
+    <button onclick="dismissPwa(true)" class="absolute top-3 right-3 w-7 h-7 flex items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30 text-sm transition-colors">✕</button>
+  </div>
+</div>
+
+<style>
+@keyframes slide-up{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+.animate-slide-up{animation:slide-up .3s cubic-bezier(.34,1.56,.64,1) both}
+</style>
+
 </body></html>
