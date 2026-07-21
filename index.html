@@ -841,14 +841,30 @@ function kalGoToday() {
   renderKalender();
 }
 
+// Helper: parse 'YYYY-MM-DD' sebagai tanggal LOKAL (bukan UTC)
+function parseLocalDate(str) {
+  if (!str) return null;
+  const [y, m, d] = str.split('-').map(Number);
+  return new Date(y, m - 1, d); // bulan 0-indexed, jam = 00:00:00 lokal
+}
+
+// Helper: format Date ke 'YYYY-MM-DD' dalam waktu LOKAL
+function toLocalKey(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
 // Kembangkan event multi-hari menjadi set tanggal
 function buildEventMap(list) {
   const map = {}; // 'YYYY-MM-DD' → [event, ...]
   list.forEach(e => {
-    const start = new Date(e.tglMulai + 'T00:00:00');
-    const end   = new Date((e.tglSelesai || e.tglMulai) + 'T00:00:00');
+    const start = parseLocalDate(e.tglMulai);
+    const end   = parseLocalDate(e.tglSelesai || e.tglMulai);
+    if (!start || !end) return;
     for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-      const key = d.toISOString().slice(0, 10);
+      const key = toLocalKey(d);
       if (!map[key]) map[key] = [];
       map[key].push(e);
     }
@@ -859,7 +875,7 @@ function buildEventMap(list) {
 function renderKalender() {
   const kalList = D.kalender || [];
   const today   = new Date(); today.setHours(0,0,0,0);
-  const todayStr= today.toISOString().slice(0,10);
+  const todayStr= toLocalKey(today);
   const eventMap= buildEventMap(kalList);
 
   // Header label
@@ -992,7 +1008,8 @@ function buildKalCard(e) {
 
 function formatTglPub(str) {
   if (!str) return '—';
-  const d = new Date(str + 'T00:00:00');
+  const d = parseLocalDate(str);
+  if (!d) return str;
   return d.toLocaleDateString('id-ID', { weekday:'short', day:'numeric', month:'long' });
 }
 
